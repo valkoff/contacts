@@ -1,0 +1,29 @@
+# Compiled source
+*.o
+*.out
+*.exe
+*.gch
+*.d
+
+# Executables
+contact_manager
+
+# Log files
+*.log
+
+# OS temporary files
+.DS_Store
+Thumbs.db
+
+# Editor configuration files
+.vscode/
+*.swp
+*.swo
+*.bak
+*.tmp
+
+# Vendor files
+vendor/
+
+# File di output JSON
+storage/
