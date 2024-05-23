@@ -23,7 +23,7 @@ Thumbs.db
 *.tmp
 
 # Vendor files
-vendor/
+vendor/** */
 
-# File di output JSON
-storage/
+# Storage files
+storage/**.json

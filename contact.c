@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/stat.h>
 #include "contact.h"
 #include "vendor/cJSON/cJSON.h"
 
@@ -11,11 +12,9 @@ cJSON *jsonContacts;
 Contact contacts[MAX_CONTACTS];
 int contactCount = 0;
 
-void initDatabase() {
-    // Read the file, initialize the jsonContacts array if doesnt exist
+void initDatabase() {   
     FILE *file = fopen(FILENAME, "r");
     if (file == NULL) {
-        fclose(file);
         // File does not exist, initialize the jsonContacts array
         jsonContacts = cJSON_CreateArray();
         // Save the empty array to the file
@@ -55,8 +54,14 @@ void loadDatabase() {
     fread(jsonString, 1, fileSize, file);
     fclose(file);
 
+    jsonString[fileSize] = '\0'; // Ensure null-terminated string
     jsonContacts = cJSON_Parse(jsonString);
     free(jsonString);
+
+    if (jsonContacts == NULL) {
+        printf("Error parsing JSON data.\n");
+        return;
+    }
 
     cJSON *contact;
     cJSON_ArrayForEach(contact, jsonContacts) {
@@ -65,11 +70,12 @@ void loadDatabase() {
         cJSON *phoneNumber = cJSON_GetObjectItemCaseSensitive(contact, "phoneNumber");
         cJSON *email = cJSON_GetObjectItemCaseSensitive(contact, "email");
 
-        snprintf(c->name, sizeof(c->name), "%s", name->valuestring);
-        snprintf(c->phoneNumber, sizeof(c->phoneNumber), "%s", phoneNumber->valuestring);
-        snprintf(c->email, sizeof(c->email), "%s", email->valuestring);
-
-        contactCount++;
+        if (cJSON_IsString(name) && cJSON_IsString(phoneNumber) && cJSON_IsString(email)) {
+            snprintf(c->name, sizeof(c->name), "%s", name->valuestring);
+            snprintf(c->phoneNumber, sizeof(c->phoneNumber), "%s", phoneNumber->valuestring);
+            snprintf(c->email, sizeof(c->email), "%s", email->valuestring);
+            contactCount++;
+        }
     }
 }
 
@@ -117,6 +123,7 @@ void removeContact(const char *name) {
             }
 
             contactCount--;
+            saveDatabase();
             printf("Contact removed\n");
             return;
         }
